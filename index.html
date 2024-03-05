@@ -2,67 +2,122 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <title>Gantt Chart Tool</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="A simple, free tool to generate Gantt charts from your task data."
+    />
+    <meta
+      name="keywords"
+      content="Gantt chart, task management, project scheduling"
+    />
+    <meta name="author" content="Joseph Na" />
+    <title>Simple Gantt Chart Generator</title>
     <link
       rel="stylesheet"
       href="https://frappe.io/frappe-gantt/frappe-gantt.css"
     />
+    <link rel="icon" href="/favicon.ico" />
+    <!-- Add a favicon.ico file in your server root -->
     <script src="https://frappe.io/frappe-gantt/frappe-gantt.js"></script>
     <style>
       body {
         font-family: Arial, sans-serif;
+        margin: 20px;
       }
       #gantt {
         width: 100%;
         height: 60vh;
+        margin-top: 20px;
       }
-      .input-field {
-        margin-bottom: 10px;
+      .input-field,
+      .instructions,
+      .footer {
+        margin-bottom: 20px;
+      }
+      textarea {
+        width: 100%;
+      }
+      button {
+        background-color: #4caf50;
+        color: white;
+        padding: 10px 15px;
+        border: none;
+        cursor: pointer;
+      }
+      button:hover {
+        background-color: #45a049;
+      }
+      a {
+        color: #007bff;
+        text-decoration: none;
+      }
+      a:hover {
+        text-decoration: underline;
+      }
+      .navigation {
+        margin-bottom: 20px;
       }
     </style>
   </head>
   <body>
+    <div class="navigation">
+      <a href="https://josephna76.github.io/41-free-gantt-chart/">Home</a>
+    </div>
+
+    <h2>Simple Gantt Chart Generator</h2>
+    <p class="instructions">
+      Instructions: Paste your task details below. Each task should be on a new
+      line, with fields either comma-separated or tab-separated. Fields are Task
+      ID, Task Name, Start Date, End Date, Dependencies (optional).
+    </p>
+
     <div class="input-field">
       <textarea
         id="taskInput"
         rows="10"
-        cols="50"
-        placeholder="Paste task details here..."
+        placeholder="Example:&#10;1, Task 1, 2024-01-01, 2024-01-05,&#10;2, Task 2, 2024-01-06, 2024-01-08, 1"
       ></textarea>
     </div>
     <button onclick="generateGanttChart()">Generate Gantt Chart</button>
 
     <div id="gantt"></div>
 
+    <div class="footer">
+      <p>
+        For more tools and resources, visit
+        <a href="https://caskcade.com" target="_blank">Caskcade.com</a>.
+      </p>
+    </div>
+
     <script>
-      // Function to generate the Gantt chart
       function generateGanttChart() {
         const input = document.getElementById("taskInput").value;
         const tasks = parseTasks(input);
-        const gantt = new Gantt("#gantt", tasks);
+        const gantt = new Gantt("#gantt", tasks, {
+          on_click: (task) => {
+            alert(`Task: ${task.name}`);
+          },
+        }); // Example of adding interaction
       }
 
-      // Parses the input text to a format suitable for frappe-gantt
       function parseTasks(input) {
         const lines = input.split("\n");
         const tasks = [];
 
         lines.forEach((line) => {
-          // Check for tab-separated values first, fall back to comma-separated
           const delimiter = line.includes("\t") ? "\t" : ",";
-          const parts = line.split(delimiter);
+          const parts = line.split(delimiter).map((part) => part.trim());
           if (parts.length >= 5) {
-            const [id, name, startDate, endDate, dependencies] = parts.map(
-              (part) => part.trim()
-            ); // Trim each part to remove extra whitespace
+            const [id, name, startDate, endDate, dependencies] = parts;
             tasks.push({
               id,
               name,
               start: startDate,
               end: endDate,
               dependencies: dependencies
-                ? dependencies.split(" ").filter(Boolean)
-                : [], // Handle multiple dependencies, if present
+                ? dependencies.split(/\s+/).filter(Boolean)
+                : [],
             });
           }
         });
