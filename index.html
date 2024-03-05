@@ -48,15 +48,21 @@
         const tasks = [];
 
         lines.forEach((line) => {
-          const parts = line.split(",");
+          // Check for tab-separated values first, fall back to comma-separated
+          const delimiter = line.includes("\t") ? "\t" : ",";
+          const parts = line.split(delimiter);
           if (parts.length >= 5) {
-            const [id, name, startDate, endDate, dependencies] = parts;
+            const [id, name, startDate, endDate, dependencies] = parts.map(
+              (part) => part.trim()
+            ); // Trim each part to remove extra whitespace
             tasks.push({
-              id: id.trim(),
-              name: name.trim(),
-              start: startDate.trim(),
-              end: endDate.trim(),
-              dependencies: dependencies.trim(),
+              id,
+              name,
+              start: startDate,
+              end: endDate,
+              dependencies: dependencies
+                ? dependencies.split(" ").filter(Boolean)
+                : [], // Handle multiple dependencies, if present
             });
           }
         });
