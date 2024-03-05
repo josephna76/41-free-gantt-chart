@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Gantt Chart Tool</title>
+    <link
+      rel="stylesheet"
+      href="https://frappe.io/frappe-gantt/frappe-gantt.css"
+    />
+    <script src="https://frappe.io/frappe-gantt/frappe-gantt.js"></script>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+      }
+      #gantt {
+        width: 100%;
+        height: 60vh;
+      }
+      .input-field {
+        margin-bottom: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="input-field">
+      <textarea
+        id="taskInput"
+        rows="10"
+        cols="50"
+        placeholder="Paste task details here..."
+      ></textarea>
+    </div>
+    <button onclick="generateGanttChart()">Generate Gantt Chart</button>
+
+    <div id="gantt"></div>
+
+    <script>
+      // Function to generate the Gantt chart
+      function generateGanttChart() {
+        const input = document.getElementById("taskInput").value;
+        const tasks = parseTasks(input);
+        const gantt = new Gantt("#gantt", tasks);
+      }
+
+      // Parses the input text to a format suitable for frappe-gantt
+      function parseTasks(input) {
+        const lines = input.split("\n");
+        const tasks = [];
+
+        lines.forEach((line) => {
+          const parts = line.split(",");
+          if (parts.length >= 5) {
+            const [id, name, startDate, endDate, dependencies] = parts;
+            tasks.push({
+              id: id.trim(),
+              name: name.trim(),
+              start: startDate.trim(),
+              end: endDate.trim(),
+              dependencies: dependencies.trim(),
+            });
+          }
+        });
+
+        return tasks;
+      }
+    </script>
+  </body>
+</html>
