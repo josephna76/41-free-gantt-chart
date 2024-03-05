@@ -11,15 +11,13 @@
       name="keywords"
       content="Gantt chart, task management, project scheduling"
     />
-    <meta name="author" content="Joseph Na" />
     <title>Simple Gantt Chart Generator</title>
     <link
       rel="stylesheet"
       href="https://frappe.io/frappe-gantt/frappe-gantt.css"
     />
-    <link rel="icon" href="/favicon.ico" />
-    <!-- Add a favicon.ico file in your server root -->
     <script src="https://frappe.io/frappe-gantt/frappe-gantt.js"></script>
+    <link rel="icon" href="/favicon.ico" />
     <style>
       body {
         font-family: Arial, sans-serif;
@@ -31,8 +29,7 @@
         margin-top: 20px;
       }
       .input-field,
-      .instructions,
-      .footer {
+      .instructions {
         margin-bottom: 20px;
       }
       textarea {
@@ -48,35 +45,35 @@
       button:hover {
         background-color: #45a049;
       }
-      a {
+      nav a,
+      .footer a {
         color: #007bff;
         text-decoration: none;
       }
-      a:hover {
+      nav a:hover,
+      .footer a:hover {
         text-decoration: underline;
-      }
-      .navigation {
-        margin-bottom: 20px;
       }
     </style>
   </head>
   <body>
-    <div class="navigation">
-      <a href="https://josephna76.github.io/41-free-gantt-chart/">Home</a>
-    </div>
+    <nav>
+      <a href="https://josephna76.github.io/">Home</a>
+    </nav>
 
     <h2>Simple Gantt Chart Generator</h2>
     <p class="instructions">
       Instructions: Paste your task details below. Each task should be on a new
       line, with fields either comma-separated or tab-separated. Fields are Task
-      ID, Task Name, Start Date, End Date, Dependencies (optional).
+      ID, Task Name, Start Date, End Date, Dependencies (optional, separated by
+      space for multiple).
     </p>
 
     <div class="input-field">
       <textarea
         id="taskInput"
         rows="10"
-        placeholder="Example:&#10;1, Task 1, 2024-01-01, 2024-01-05,&#10;2, Task 2, 2024-01-06, 2024-01-08, 1"
+        placeholder="Example:&#10;1\tTask 1\t2024-01-01\t2024-01-05&#10;2\tTask 2\t2024-01-06\t2024-01-08\t1"
       ></textarea>
     </div>
     <button onclick="generateGanttChart()">Generate Gantt Chart</button>
@@ -91,39 +88,39 @@
     </div>
 
     <script>
-      function generateGanttChart() {
-        const input = document.getElementById("taskInput").value;
-        const tasks = parseTasks(input);
-        const gantt = new Gantt("#gantt", tasks, {
-          on_click: (task) => {
-            alert(`Task: ${task.name}`);
-          },
-        }); // Example of adding interaction
-      }
+      document.addEventListener("DOMContentLoaded", function () {
+        function generateGanttChart() {
+          const input = document.getElementById("taskInput").value;
+          const tasks = parseTasks(input);
+          // Assuming Gantt is correctly loaded and available
+          const gantt = new Gantt("#gantt", tasks);
+        }
 
-      function parseTasks(input) {
-        const lines = input.split("\n");
-        const tasks = [];
+        function parseTasks(input) {
+          const lines = input.split("\n");
+          const tasks = [];
 
-        lines.forEach((line) => {
-          const delimiter = line.includes("\t") ? "\t" : ",";
-          const parts = line.split(delimiter).map((part) => part.trim());
-          if (parts.length >= 5) {
-            const [id, name, startDate, endDate, dependencies] = parts;
-            tasks.push({
-              id,
-              name,
-              start: startDate,
-              end: endDate,
-              dependencies: dependencies
-                ? dependencies.split(/\s+/).filter(Boolean)
-                : [],
-            });
-          }
-        });
+          lines.forEach((line) => {
+            const delimiter = line.includes("\t") ? "\t" : ",";
+            const parts = line.split(delimiter).map((part) => part.trim());
+            if (parts.length >= 4) {
+              // Assuming dependencies are optional
+              const [id, name, startDate, endDate, dependencies] = parts;
+              tasks.push({
+                id,
+                name,
+                start: startDate,
+                end: endDate,
+                dependencies: dependencies
+                  ? dependencies.split(/\s+/).filter(Boolean)
+                  : [],
+              });
+            }
+          });
 
-        return tasks;
-      }
+          return tasks;
+        }
+      });
     </script>
   </body>
 </html>
