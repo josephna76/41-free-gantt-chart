@@ -74,6 +74,8 @@
       ></textarea>
     </div>
     <button id="generateBtn">Generate Gantt Chart</button>
+    <button id="downloadBtn">Download Gantt Chart as Image</button>
+    <button id="copyBtn">Copy Gantt Chart as PDF</button>
 
     <div id="gantt"></div>
 
@@ -90,16 +92,42 @@
           .getElementById("generateBtn")
           .addEventListener("click", generateGanttChart);
 
+        document
+          .getElementById("downloadBtn")
+          .addEventListener("click", downloadGanttChart);
+
+        document
+          .getElementById("copyBtn")
+          .addEventListener("click", copyGanttChart);
+
+        let ganttInstance;
+
         function generateGanttChart() {
           const input = document.getElementById("taskInput").value;
           const tasks = parseTasks(input);
-          // Assuming Gantt is correctly loaded and available
-          new Gantt("#gantt", tasks, {
+          ganttInstance = new Gantt("#gantt", tasks, {
             on_click: (task) => {
               alert(`Task: ${task.name}`);
             },
             view_mode: "Day",
             language: "en",
+          });
+        }
+
+        function downloadGanttChart() {
+          html2canvas(ganttInstance.$container).then((canvas) => {
+            const link = document.createElement("a");
+            link.download = "gantt_chart.png";
+            link.href = canvas.toDataURL();
+            link.click();
+          });
+        }
+
+        function copyGanttChart() {
+          html2canvas(ganttInstance.$container).then((canvas) => {
+            const pdf = new jsPDF("p", "mm", "a4");
+            pdf.addImage(canvas.toDataURL("image/png"), "PNG", 0, 0, 210, 297);
+            pdf.save("gantt_chart.pdf");
           });
         }
 
