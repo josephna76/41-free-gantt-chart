@@ -11,13 +11,14 @@
       name="keywords"
       content="Gantt chart, task management, project scheduling"
     />
+    <meta name="author" content="Joseph Na" />
     <title>Simple Gantt Chart Generator</title>
     <link
       rel="stylesheet"
       href="https://frappe.io/frappe-gantt/frappe-gantt.css"
     />
-    <script src="https://frappe.io/frappe-gantt/frappe-gantt.js"></script>
     <link rel="icon" href="/favicon.ico" />
+    <script src="https://frappe.io/frappe-gantt/frappe-gantt.js"></script>
     <style>
       body {
         font-family: Arial, sans-serif;
@@ -58,7 +59,7 @@
   </head>
   <body>
     <nav>
-      <a href="https://josephna76.github.io/">Home</a>
+      <a href="https://josephna76.github.io/41-free-gantt-chart/">Home</a>
     </nav>
 
     <h2>Simple Gantt Chart Generator</h2>
@@ -76,7 +77,7 @@
         placeholder="Example:&#10;1\tTask 1\t2024-01-01\t2024-01-05&#10;2\tTask 2\t2024-01-06\t2024-01-08\t1"
       ></textarea>
     </div>
-    <button onclick="generateGanttChart()">Generate Gantt Chart</button>
+    <button id="generateBtn">Generate Gantt Chart</button>
 
     <div id="gantt"></div>
 
@@ -89,6 +90,10 @@
 
     <script>
       document.addEventListener("DOMContentLoaded", function () {
+        document
+          .getElementById("generateBtn")
+          .addEventListener("click", generateGanttChart);
+
         function generateGanttChart() {
           const input = document.getElementById("taskInput").value;
           const tasks = parseTasks(input);
