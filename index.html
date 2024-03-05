@@ -11,9 +11,9 @@
     <title>Simple Gantt Chart Generator</title>
     <link
       rel="stylesheet"
-      href="https://frappe.io/frappe-gantt/frappe-gantt.css"
+      href="https://cdnjs.cloudflare.com/ajax/libs/frappe-gantt/0.6.1/frappe-gantt.min.css"
     />
-    <script src="https://frappe.io/frappe-gantt/frappe-gantt.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/frappe-gantt/0.6.1/frappe-gantt.min.js"></script>
     <link rel="icon" href="favicon.ico" />
     <style>
       body {
@@ -93,43 +93,31 @@
         function generateGanttChart() {
           const input = document.getElementById("taskInput").value;
           const tasks = parseTasks(input);
-          const gantt = new Gantt("#gantt", tasks, {
+          // Assuming Gantt is correctly loaded and available
+          new Gantt("#gantt", tasks, {
             on_click: (task) => {
               alert(`Task: ${task.name}`);
             },
             view_mode: "Day",
+            language: "en",
           });
         }
 
         function parseTasks(input) {
           const lines = input.split("\n");
-          let taskId = 1; // Initialize task ID to manage tasks without given IDs
-          const tasks = [];
-
-          lines.forEach((line, index) => {
-            const [startDate, endDate, , dependencies] = line
-              .split(/\t+/)
-              .map((part) => part.trim());
-            if (startDate && endDate) {
-              tasks.push({
-                id: taskId,
-                name: `Task ${taskId}`,
-                start: startDate,
-                end: endDate,
-                dependencies: dependencies
-                  ? dependencies.split(/,\s*/).map(Number).filter(Boolean)
-                  : [],
-              });
-              taskId++;
-            }
+          const tasks = lines.map((line, index) => {
+            const [startDate, endDate, , dependencies] = line.split(/\t+/);
+            return {
+              id: index.toString(),
+              name: `Task ${index + 1}`,
+              start: startDate.trim(),
+              end: endDate.trim(),
+              dependencies: dependencies
+                ? dependencies.split(",").map((dep) => dep.trim())
+                : [],
+            };
           });
-
-          return tasks.map((task) => ({
-            ...task,
-            dependencies: task.dependencies
-              .map((dep) => `Task ${dep}`)
-              .join(", "),
-          }));
+          return tasks;
         }
       });
     </script>
