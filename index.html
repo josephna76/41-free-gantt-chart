@@ -26,6 +26,7 @@
       }
       textarea {
         width: 100%;
+        height: 150px;
       }
       button {
         background-color: #4caf50;
@@ -33,6 +34,7 @@
         padding: 10px 15px;
         border: none;
         cursor: pointer;
+        margin-right: 5px;
       }
       button:hover {
         background-color: #45a049;
@@ -54,31 +56,22 @@
     <div class="input-field">
       <textarea
         id="taskInput"
-        rows="10"
         placeholder="Paste your task details here..."
       ></textarea>
     </div>
     <button id="generateBtn">Generate Gantt Chart</button>
     <button id="exportSVG">Export Gantt Chart as SVG</button>
-    <!-- Export to SVG button -->
     <div id="gantt"></div>
-
-    <div class="footer">
-      <p>
-        For more tools and resources, visit
-        <a href="https://caskcade.com" target="_blank">Caskcade.com</a>.
-      </p>
-    </div>
 
     <script>
       document.addEventListener("DOMContentLoaded", function () {
+        const generateBtn = document.getElementById("generateBtn");
+        const exportSVG = document.getElementById("exportSVG");
         let gantt;
 
-        document
-          .getElementById("generateBtn")
-          .addEventListener("click", function () {
-            const input = document.getElementById("taskInput").value;
-            const tasks = parseTasks(input);
+        generateBtn.addEventListener("click", function () {
+          const tasks = parseTasks(document.getElementById("taskInput").value);
+          if (tasks && tasks.length > 0) {
             gantt = new Gantt("#gantt", tasks, {
               on_click: (task) => {
                 alert(`Task: ${task.name}`);
@@ -86,45 +79,43 @@
               view_mode: "Day",
               language: "en",
             });
-          });
+          }
+        });
 
-        document
-          .getElementById("exportSVG")
-          .addEventListener("click", function () {
-            if (gantt) {
-              const svgContent = gantt.svg; // Access the SVG property
-              triggerSVGDownload(svgContent.outerHTML); // Trigger download using the SVG content
-            }
-          });
-
-        function parseTasks(input) {
-          const lines = input.split("\n");
-          return lines
-            .map((line, index) => {
-              const [taskName, startDate, endDate] = line.split(/\t+/); // Assuming tab-separated values
-              return taskName
-                ? {
-                    // Check if taskName exists to avoid undefined entries
-                    id: `Task_${index}`,
-                    name: taskName.trim(),
-                    start: startDate.trim(),
-                    end: endDate.trim(),
-                    progress: 100,
-                  }
-                : null;
-            })
-            .filter((task) => task !== null); // Filter out any null entries from improperly formatted lines
-        }
-
-        function triggerSVGDownload(svgContent) {
+        exportSVG.addEventListener("click", function () {
+          if (!gantt) {
+            alert("Please generate a Gantt chart first.");
+            return;
+          }
+          const svgContent = gantt.$svg.outerHTML;
           const blob = new Blob([svgContent], { type: "image/svg+xml" });
           const url = URL.createObjectURL(blob);
           const link = document.createElement("a");
           link.href = url;
           link.download = "gantt-chart.svg";
-          document.body.appendChild(link); // Temporarily add link to body for download
+          document.body.appendChild(link);
           link.click();
-          document.body.removeChild(link); // Remove link after triggering download
+          document.body.removeChild(link);
+        });
+
+        function parseTasks(input) {
+          return input
+            .split("\n")
+            .map((line, index) => {
+              if (line.trim() === "") return null;
+              const parts = line.split("\t").map((part) => part.trim());
+              if (parts.length < 3) return null;
+              const [name, start, end] = parts;
+              return {
+                id: `${index}`,
+                name,
+                start,
+                end,
+                progress: 100,
+                dependencies: parts[4] ? parts[4].split(",") : [],
+              };
+            })
+            .filter((task) => task !== null);
         }
       });
     </script>
