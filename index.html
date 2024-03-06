@@ -15,7 +15,8 @@
     />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/frappe-gantt/0.6.1/frappe-gantt.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/0.5.0-beta4/html2canvas.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
+    <script src="https://unpkg.com/htmx.org@1.6.0/dist/htmx.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.3/jspdf.umd.min.js"></script>
     <link rel="icon" href="favicon_io/favicon.ico" />
     <link
       rel="apple-touch-icon"
@@ -36,13 +37,9 @@
     />
     <link rel="manifest" href="favicon_io/site.webmanifest" />
     <style>
-      body {
-        font-family: Arial, sans-serif;
-        margin: 20px;
-      }
-      #gantt {
+      #progressChart {
         width: 100%;
-        height: 60vh;
+        height: 300px;
         margin-top: 20px;
       }
       .input-field,
@@ -80,11 +77,10 @@
 
     <h2>Simple Gantt Chart Generator</h2>
     <p class="instructions">
-      Instructions: Paste your task details in the following format: Task Title,
-      Start Date, End Date, Duration (Days), Dependencies (ID). The pasted
-      format from your spreadsheet should already be correct without
-      modifications. Each task should be on a new line. Dependencies are
-      optional and can be multiple, separated by a comma.
+      Instructions: Paste your task details in the following format: Task, Start
+      Date, End Date, Duration (Days), Dependencies (ID). Each task should be on
+      a new line. Dependencies are optional and can be multiple, separated by a
+      comma.
     </p>
 
     <div class="input-field">
@@ -99,6 +95,8 @@
     <button id="copyBtn">Copy Gantt Chart as PDF</button>
 
     <div id="gantt"></div>
+
+    <canvas id="progressChart"></canvas>
 
     <div class="footer">
       <p>
@@ -122,6 +120,7 @@
           .addEventListener("click", copyGanttChart);
 
         let ganttInstance;
+        let progressChart;
 
         function generateGanttChart() {
           const input = document.getElementById("taskInput").value;
@@ -133,6 +132,9 @@
             view_mode: "Day",
             language: "en",
           });
+
+          // Update the progress chart
+          updateProgressChart(tasks);
         }
 
         function downloadGanttChart() {
@@ -168,6 +170,64 @@
             };
           });
           return tasks;
+        }
+
+        function updateProgressChart(tasks) {
+          const chartData = {
+            type: "bar",
+            data: {
+              labels: tasks.map((task) => task.name),
+              datasets: [
+                {
+                  label: "Start Date",
+                  data: tasks.map((task) => task.start),
+                  backgroundColor: "rgba(255, 99, 132, 0.2)",
+                  borderColor: "rgba(255, 99, 132, 1)",
+                  borderWidth: 1,
+                },
+                {
+                  label: "End Date",
+                  data: tasks.map((task) => task.end),
+                  backgroundColor: "rgba(54, 162, 235, 0.2)",
+                  borderColor: "rgba(54, 162, 235, 1)",
+                  borderWidth: 1,
+                },
+              ],
+            },
+            options: {
+              scales: {
+                y: {
+                  stacked: true,
+                },
+              },
+            },
+          };
+
+          // Fetch chart from QuickChart API
+          fetchChart(chartData);
+        }
+
+        function fetchChart(chartData) {
+          const chartCanvas = document.getElementById("progressChart");
+          const chartCtx = chartCanvas.getContext("2d");
+
+          fetch("https://quickchart.io/chart", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(chartData),
+          })
+            .then((response) => response.blob())
+            .then((blob) => {
+              const imgUrl = URL.createObjectURL(blob);
+              progressChart = new Image();
+              progressChart.onload = function () {
+                chartCtx.drawImage(progressChart, 0, 0);
+              };
+              progressChart.src = imgUrl;
+            })
+            .catch((error) => console.error("Error fetching chart:", error));
         }
       });
     </script>
