@@ -14,6 +14,8 @@
       href="https://cdnjs.cloudflare.com/ajax/libs/frappe-gantt/0.6.1/frappe-gantt.min.css"
     />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/frappe-gantt/0.6.1/frappe-gantt.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/0.5.0-beta4/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
     <link rel="icon" href="favicon_io/favicon.ico" />
     <link
       rel="apple-touch-icon"
@@ -78,17 +80,18 @@
 
     <h2>Simple Gantt Chart Generator</h2>
     <p class="instructions">
-      Instructions: Paste your task details in the following format: Start Date,
-      End Date, Duration (optional), Dependencies (ID). Each task should be on a
-      new line. Dependencies are optional and can be multiple, separated by a
-      comma.
+      Instructions: Paste your task details in the following format: Task Title,
+      Start Date, End Date, Duration (Days), Dependencies (ID). The pasted
+      format from your spreadsheet should already be correct without
+      modifications. Each task should be on a new line. Dependencies are
+      optional and can be multiple, separated by a comma.
     </p>
 
     <div class="input-field">
       <textarea
         id="taskInput"
         rows="10"
-        placeholder="Example:&#10;2024-03-12\t2024-03-17\t6&#10;2024-06-06\t2024-06-26\t21\t4,5,6"
+        placeholder="Paste your task details here..."
       ></textarea>
     </div>
     <button id="generateBtn">Generate Gantt Chart</button>
@@ -152,10 +155,11 @@
         function parseTasks(input) {
           const lines = input.split("\n");
           const tasks = lines.map((line, index) => {
-            const [startDate, endDate, , dependencies] = line.split(/\t+/);
+            const [taskName, startDate, endDate, , dependencies] =
+              line.split(/\t+/);
             return {
               id: index.toString(),
-              name: `Task ${index + 1}`,
+              name: taskName ? taskName.trim() : `Task ${index + 1}`,
               start: startDate.trim(),
               end: endDate.trim(),
               dependencies: dependencies
