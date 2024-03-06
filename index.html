@@ -90,9 +90,11 @@
         placeholder="Paste your task details here..."
       ></textarea>
     </div>
-    <button id="generateBtn">Generate Gantt Chart</button>
-    <button id="downloadBtn">Download Gantt Chart as Image</button>
-    <button id="copyBtn">Copy Gantt Chart as PDF</button>
+    <button id="generateBtn" hx-get="/generate">Generate Gantt Chart</button>
+    <button id="downloadBtn" hx-post="/download">
+      Download Gantt Chart as Image
+    </button>
+    <button id="copyBtn" hx-post="/copy">Copy Gantt Chart as PDF</button>
 
     <div id="gantt"></div>
 
