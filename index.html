@@ -69,24 +69,41 @@
         function generateGanttChart() {
           const input = document.getElementById("taskInput").value;
           const tasks = parseTasks(input);
-          new Gantt("#gantt", tasks, {
-            view_mode: "Day",
-            language: "en",
-          });
+          if (tasks.length > 0) {
+            new Gantt("#gantt", tasks, {
+              view_mode: "Day",
+              language: "en",
+            });
+          } else {
+            alert(
+              "Please ensure your task details are correctly formatted and try again."
+            );
+          }
         }
 
         function parseTasks(input) {
-          const lines = input.split("\n");
-          return lines.map((line, index) => {
-            const [name, start, end] = line.split(",");
-            return {
-              id: index.toString(),
-              name: name.trim(),
-              start: start.trim(),
-              end: end.trim(),
-              progress: 100,
-            };
-          });
+          const lines = input
+            .split("\n")
+            .filter((line) => line.trim().length > 0);
+          return lines
+            .map((line, index) => {
+              // Splitting by tabs since your input seems to be tab-separated
+              const parts = line.split("\t").map((part) => part.trim());
+              if (parts.length < 4) return null; // Ensures there are enough parts per line
+
+              const [name, start, end, , dependencies] = parts;
+              return {
+                id: (index + 1).toString(), // Assigning a task number as ID, starting from 1
+                name,
+                start,
+                end,
+                dependencies: dependencies
+                  ? dependencies.split(",").map((dep) => dep.trim())
+                  : [],
+                progress: 100, // Assuming tasks are to be shown as completed for visual representation
+              };
+            })
+            .filter((task) => task !== null); // Exclude any tasks that didn't meet the formatting requirements
         }
       });
     </script>
