@@ -11,18 +11,14 @@
     <title>Simple Gantt Chart Generator</title>
     <link
       rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/frappe-gantt/0.5.0/frappe-gantt.css"
+      href="https://cdnjs.cloudflare.com/ajax/libs/frappe-gantt/0.6.1/frappe-gantt.min.css"
     />
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/frappe-gantt/0.5.0/frappe-gantt.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/frappe-gantt/0.6.1/frappe-gantt.min.js"></script>
+    <link rel="icon" href="favicon_io/favicon.ico" />
     <style>
       body {
         font-family: Arial, sans-serif;
         margin: 20px;
-      }
-      #gantt {
-        width: 100%;
-        height: 60vh;
-        margin-top: 20px;
       }
       .input-field,
       .instructions {
@@ -30,7 +26,6 @@
       }
       textarea {
         width: 100%;
-        height: 150px;
       }
       button {
         background-color: #4caf50;
@@ -38,19 +33,9 @@
         padding: 10px 15px;
         border: none;
         cursor: pointer;
-        margin-right: 5px;
       }
       button:hover {
         background-color: #45a049;
-      }
-      nav a,
-      .footer a {
-        color: #007bff;
-        text-decoration: none;
-      }
-      nav a:hover,
-      .footer a:hover {
-        text-decoration: underline;
       }
     </style>
   </head>
@@ -62,17 +47,20 @@
     <h2>Simple Gantt Chart Generator</h2>
     <p class="instructions">
       Instructions: Paste your task details in the following format: Task Title,
-      Start Date, End Date. Each task should be on a new line.
+      Start Date, End Date, Duration (Days), Dependencies (ID). Each task should
+      be on a new line. Dependencies are optional and can be multiple, separated
+      by a comma.
     </p>
     <div class="input-field">
       <textarea
         id="taskInput"
+        rows="10"
         placeholder="Paste your task details here..."
       ></textarea>
     </div>
     <button id="generateBtn">Generate Gantt Chart</button>
     <button id="exportSVG">Export Gantt Chart as SVG</button>
-
+    <!-- Export to SVG button -->
     <div id="gantt"></div>
 
     <div class="footer">
@@ -91,41 +79,41 @@
           .addEventListener("click", function () {
             const input = document.getElementById("taskInput").value;
             const tasks = parseTasks(input);
-            if (tasks.length > 0) {
-              gantt = new Gantt("#gantt", tasks, {
-                view_mode: "Day",
-                language: "en",
-              });
-            } else {
-              alert(
-                "Please ensure your task details are correctly formatted and try again."
-              );
-            }
+            gantt = new Gantt("#gantt", tasks, {
+              on_click: (task) => {
+                alert(`Task: ${task.name}`);
+              },
+              view_mode: "Day",
+              language: "en",
+            });
           });
 
         document
           .getElementById("exportSVG")
           .addEventListener("click", function () {
             if (gantt) {
-              const svgContent = gantt.svg();
-              triggerSVGDownload(svgContent);
+              const svgContent = gantt.svg; // Access the SVG property
+              triggerSVGDownload(svgContent.outerHTML); // Trigger download using the SVG content
             }
           });
 
         function parseTasks(input) {
-          const lines = input
-            .split("\n")
-            .filter((line) => line.trim().length > 0);
-          return lines.map((line, index) => {
-            const [name, start, end] = line.split(",");
-            return {
-              id: (index + 1).toString(),
-              name: name.trim(),
-              start: start.trim(),
-              end: end.trim(),
-              progress: 100,
-            };
-          });
+          const lines = input.split("\n");
+          return lines
+            .map((line, index) => {
+              const [taskName, startDate, endDate] = line.split(/\t+/); // Assuming tab-separated values
+              return taskName
+                ? {
+                    // Check if taskName exists to avoid undefined entries
+                    id: `Task_${index}`,
+                    name: taskName.trim(),
+                    start: startDate.trim(),
+                    end: endDate.trim(),
+                    progress: 100,
+                  }
+                : null;
+            })
+            .filter((task) => task !== null); // Filter out any null entries from improperly formatted lines
         }
 
         function triggerSVGDownload(svgContent) {
@@ -134,7 +122,7 @@
           const link = document.createElement("a");
           link.href = url;
           link.download = "gantt-chart.svg";
-          document.body.appendChild(link); // Append link to body temporarily for download
+          document.body.appendChild(link); // Temporarily add link to body for download
           link.click();
           document.body.removeChild(link); // Remove link after triggering download
         }
